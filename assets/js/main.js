@@ -1,30 +1,55 @@
-const offset= 0 ;
-const limit = 10;
-const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
+const botao = document.getElementById("loadMoreButton")
+const limit = 10
+let offset = 0
 
-function pokemonConvert(pokemon){
-    return `
-            <li class="pokemon">
-            <span class="number">#001</span>
-            <span class="name">${pokemon.name}</span>
+const maxRecords = 151
 
-            <div class="detail">
-                <ol class="types">
-                    <li class="type">Grass</li>
-                    <li class="type">Poison</li>
-                </ol>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg" alt="${pokemon.name}">
 
-        </div>
-        </li>`
-}
 
 const pokemonList = document.getElementById('pokemonList')
 
-pokeApi.getPokemons().then((pokemons) =>{
-       for( let i=0; i<=pokemons.length;i++){
-        const pokemon = pokemons[i];
-        // console.log(pokemonConvert(pokemon))
-        pokemonList.innerHTML += pokemonConvert(pokemon)
-       }
+function loadPokemonItens(offset, limit){
+    
+pokeApi.getPokemons(offset, limit).then((pokemons = []) =>{
+    const newHtml = pokemons.map((pokemon) =>
+    `
+                    <li class="pokemon ${pokemon.type}" >
+                    <span class="number">#${pokemon.number}</span>
+                    <span class="name">${pokemon.name}</span>
+        
+                    <div class="detail">
+                        <ol class="types">
+                     ${pokemon.types.map((type) => `<li class='type ${type}'>${type}</li>`).join('')}
+                        </ol>
+        
+                    <img src=${pokemon.photo}
+                    alt="${pokemon.name}">
+        
+                </div>
+                </li>
+                `
+        ).join('')
+
+    pokemonList.innerHTML += newHtml
+    
+})
+}
+
+loadPokemonItens(offset, limit)
+
+botao.addEventListener("click", () =>{
+    offset += limit
+
+    const qtdRecordNextPage = offset + limit
+
+    if(qtdRecordNextPage >= maxRecords){
+        const newLimit = maxRecords - offset
+        loadPokemonItens(offset, newLimit)
+        
+
+        botao.parentElement.removeChild(botao)
+    } else{
+        loadPokemonItens(offset, limit)
+    }
+
 })
